@@ -1,0 +1,45 @@
+services:
+  mysql_backend:
+    image: mysql:8.0
+    container_name: poc_mysql_backend
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: poc_regras_negocio_backend
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./banco/backend:/docker-entrypoint-initdb.d
+      - mysql_backend_data:/var/lib/mysql
+
+  mysql_db_rules:
+    image: mysql:8.0
+    container_name: poc_mysql_db_rules
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: poc_regras_negocio_db_rules
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./banco/db_rules:/docker-entrypoint-initdb.d
+      - mysql_db_rules_data:/var/lib/mysql
+
+  backend:
+    build: ./backend
+    container_name: poc_backend
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_TYPE=backend # ou 'db_rules'
+      - DB_HOST_BACKEND=mysql_backend
+      - DB_HOST_DB_RULES=mysql_db_rules
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - DB_NAME_BACKEND=poc_regras_negocio_backend
+      - DB_NAME_DB_RULES=poc_regras_negocio_db_rules
+    depends_on:
+      - mysql_backend
+      - mysql_db_rules
+
+volumes:
+  mysql_backend_data:
+  mysql_db_rules_data: 
